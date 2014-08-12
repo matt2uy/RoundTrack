@@ -32,7 +32,7 @@ static void subtract_stroke() {
 }
 
 static void next_hole() {
-  if (current_hole == 19) {
+  if (current_hole == 18) {
     current_hole = 1;
   }
   else {
@@ -40,7 +40,7 @@ static void next_hole() {
   }
 }
 static void prev_hole() {
-  if (current_hole == 0) {
+  if (current_hole == 1) {
     current_hole = 18;
   }
   else {
@@ -58,7 +58,7 @@ static void add_and_show_total() {
     total_putts+=num_of_putts[a];
   }
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "You shot: %u\n%uPutts", total_score, total_putts);
+  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts", total_score, total_putts);
   text_layer_set_text(text_layer, body_text);
   
   round_complete = true;
@@ -78,10 +78,10 @@ static void main_menu() {
 
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
   // undo last hole
-  next_shot_is_tee_shot = true;
   round_complete = false;
   prev_hole();
   num_of_strokes[current_hole] = 0;
+  next_shot_is_tee_shot = false;
   show_club_selection();
 
 }
