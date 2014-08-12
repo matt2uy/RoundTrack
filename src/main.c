@@ -7,6 +7,8 @@ int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,    // there is no hole 0
 int current_hole = 1;
 bool round_complete = false;
 
+int holes_in_round = 9;
+
 int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 bool next_shot_is_tee_shot = false;
@@ -32,7 +34,7 @@ static void subtract_stroke() {
 }
 
 static void next_hole() {
-  if (current_hole == 18) {
+  if (current_hole == holes_in_round) {
     current_hole = 1;
   }
   else {
@@ -41,7 +43,7 @@ static void next_hole() {
 }
 static void prev_hole() {
   if (current_hole == 1) {
-    current_hole = 18;
+    current_hole = holes_in_round;
   }
   else {
     current_hole--;
@@ -53,7 +55,7 @@ static void add_and_show_total() {
   current_hole++;
   int total_score = 0;
   int total_putts = 0;
-  for (int a=1; a<19; a++) {
+  for (int a=1; a<holes_in_round+1; a++) {
     total_score+=num_of_strokes[a];
     total_putts+=num_of_putts[a];
   }
@@ -96,7 +98,7 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_complete == false) {
     //club_selected[current_stroke] = 'd';
     if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-      if (current_hole == 18) {
+      if (current_hole == holes_in_round) {
         add_and_show_total();
       }
       else {
@@ -121,7 +123,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_complete == false) {
     //club_selected[current_stroke] = 'd';
     if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-      if (current_hole == 18) {
+      if (current_hole == holes_in_round) {
         add_and_show_total();
       }
       else {
