@@ -1,4 +1,4 @@
-RoundTrack2.0
+RoundTrack
 =============
 
-Choose your club for each shot
+Shot by shot golf stats using your Pebble.
