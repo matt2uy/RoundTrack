@@ -5,6 +5,11 @@ static TextLayer *text_layer;
 int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,    // there is no hole 0
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int current_hole = 1;
+bool round_complete = false;
+
+int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+bool next_shot_is_tee_shot = false;
 
 char clubs_selected[200];
 char club_type = '?'; // w = wood      | a = approach                            | p = putter
@@ -13,7 +18,10 @@ char club = '?'; // d = driver, 3 = 3w | 4-9 = 4i-9i, w = pw, a = aw, s = sw,| p
 int stage = 1;
 /////// Stroke manipulation functions
 
-static void add_stroke() {
+static void add_stroke(char shot_type) {
+  if (shot_type == 'p') {
+    num_of_putts[current_hole]++;
+  }
   num_of_strokes[current_hole]++;
 }
 static void subtract_stroke() {
@@ -44,14 +52,18 @@ static void prev_hole() {
 static void add_and_show_total() {
   current_hole++;
   int total_score = 0;
+  int total_putts = 0;
   for (int a=1; a<19; a++) {
     total_score+=num_of_strokes[a];
+    total_putts+=num_of_putts[a];
   }
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "You shot: %u", total_score);
+  snprintf(body_text, sizeof(body_text), "You shot: %u\n%uPutts", total_score, total_putts);
   text_layer_set_text(text_layer, body_text);
+  
+  round_complete = true;
 }
-static void choose_club() {
+static void show_club_selection() {
   static char body_text[50];
   snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n----------\nApproach\n----------\nPutt", current_hole, num_of_strokes[current_hole]);
   text_layer_set_text(text_layer, body_text);
@@ -65,7 +77,13 @@ static void main_menu() {
 /////// Click event functions
 
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
-  // undo
+  // undo last hole
+  next_shot_is_tee_shot = true;
+  round_complete = false;
+  prev_hole();
+  num_of_strokes[current_hole] = 0;
+  show_club_selection();
+
 }
 static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
   //... called when long click is released ...
@@ -73,34 +91,67 @@ static void select_long_click_release_handler(ClickRecognizerRef recognizer, voi
   Window *window = (Window *)context; // This context defaults to the window, but may be changed with \ref window_set_click_context.
 }
 
-bool next_shot_is_tee_shot = false;
-
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //club_selected[current_stroke] = 'd';
-  if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-    current_hole++;
-    next_shot_is_tee_shot = false;
+  if (round_complete == false) {
+    //club_selected[current_stroke] = 'd';
+    if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
+      if (current_hole == 18) {
+        add_and_show_total();
+      }
+      else {
+        next_shot_is_tee_shot = false;
+        next_hole();
+        add_stroke('d');
+        show_club_selection();
+      }
+    }
+    else {
+      add_stroke('d');
+      show_club_selection();
+    }
   }
 
-  num_of_strokes[current_hole]++;
-  choose_club();
+
+  else {
+    // show more stats or somethign
+  }
 }
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-    current_hole++;
-    next_shot_is_tee_shot = false;
+  if (round_complete == false) {
+    //club_selected[current_stroke] = 'd';
+    if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
+      if (current_hole == 18) {
+        add_and_show_total();
+      }
+      else {
+        next_shot_is_tee_shot = false;
+        next_hole();
+        add_stroke('a');
+        show_club_selection();
+      }
+    }
+    else {
+      add_stroke('a');
+      show_club_selection();
+    }
   }
-  num_of_strokes[current_hole]++;
-  choose_club();
+
+  else {
+    // show more stats or somethign
+  }
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  num_of_strokes[current_hole]++;
-  choose_club();
-  next_shot_is_tee_shot = true;
+  if (round_complete == false) {
+    add_stroke('p');
+    show_club_selection();
+    next_shot_is_tee_shot = true;
+  }
 
-
+  else {
+    // show more stats or somethign
+  }
 }
 
 /////////// configuration
