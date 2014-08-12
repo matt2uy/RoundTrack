@@ -4,28 +4,22 @@ static Window *window;
 static TextLayer *text_layer;
 int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,    // there is no hole 0
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-int current_hole = 1;
+int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int current_hole = 1; // initialize to first hole
+int holes_in_round = 18;
+bool next_shot_is_tee_shot = false; // assigned value of true after a putt is made
 bool round_complete = false;
 
-int holes_in_round = 9;
-
-int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-bool next_shot_is_tee_shot = false;
-
 char clubs_selected[200];
-char club_type = '?'; // w = wood      | a = approach                            | p = putter
-char club_sub_type = '?'; // 1, 2, 3
-char club = '?'; // d = driver, 3 = 3w | 4-9 = 4i-9i, w = pw, a = aw, s = sw,| p = putter
-int stage = 1;
-/////// Stroke manipulation functions
 
+/////// Stroke manipulation functions
 static void add_stroke(char shot_type) {
   if (shot_type == 'p') {
     num_of_putts[current_hole]++;
   }
   num_of_strokes[current_hole]++;
 }
+
 static void subtract_stroke() {
   num_of_strokes[current_hole]--;
   if(num_of_strokes[current_hole] < 0) {
@@ -49,10 +43,8 @@ static void prev_hole() {
     current_hole--;
   }
 }
-/////// update window
-
-static void add_and_show_total() {
-  current_hole++;
+/////// Update window
+static void add_and_show_total() { // add up strokes and putts and show them
   int total_score = 0;
   int total_putts = 0;
   for (int a=1; a<holes_in_round+1; a++) {
@@ -65,40 +57,29 @@ static void add_and_show_total() {
   
   round_complete = true;
 }
+
 static void show_club_selection() {
   static char body_text[50];
   snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n----------\nApproach\n----------\nPutt", current_hole, num_of_strokes[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
-static void main_menu() {
-  text_layer_set_text(text_layer, "<-- \n---------------\n FIR \n---------------\n -->");
-  text_layer_set_text(text_layer, "<-- \n---------------\n Center \n---------------\n -->");
-}
-  
 /////// Click event functions
-
-static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
-  // undo last hole
+static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
   round_complete = false;
-  prev_hole();
   num_of_strokes[current_hole] = 0;
   next_shot_is_tee_shot = false;
   show_club_selection();
-
 }
 static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
   //... called when long click is released ...
   // do nothing
-  Window *window = (Window *)context; // This context defaults to the window, but may be changed with \ref window_set_click_context.
 }
-
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_complete == false) {
-    //club_selected[current_stroke] = 'd';
-    if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-      if (current_hole == holes_in_round) {
+    if (next_shot_is_tee_shot == true) { // proceed to next hole if last stroke was a putt
+      if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
         add_and_show_total();
       }
       else {
@@ -108,22 +89,16 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
         show_club_selection();
       }
     }
-    else {
+    else { // stay in the same hole if there are no putts yet in this hole
       add_stroke('d');
       show_club_selection();
     }
   }
-
-
-  else {
-    // show more stats or somethign
-  }
 }
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_complete == false) {
-    //club_selected[current_stroke] = 'd';
     if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
-      if (current_hole == holes_in_round) {
+      if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
         add_and_show_total();
       }
       else {
@@ -133,14 +108,10 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
         show_club_selection();
       }
     }
-    else {
+    else {  // stay in the same hole if there are no putts yet in this hole
       add_stroke('a');
       show_club_selection();
     }
-  }
-
-  else {
-    // show more stats or somethign
   }
 }
 
@@ -150,19 +121,14 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
     show_club_selection();
     next_shot_is_tee_shot = true;
   }
-
-  else {
-    // show more stats or somethign
-  }
 }
 
-/////////// configuration
+/////////// Configure event handlers, windows/text layers and other stuff
 
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
-   // long click config:
   window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
 }
 
