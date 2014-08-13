@@ -5,6 +5,8 @@ static TextLayer *text_layer;
 int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,    // there is no hole 0
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool num_of_GIR[] = {false,false,false,false,false,false,false,false,false,false,
+                     false,false,false,false,false,false,false,false,false,false};
 int current_hole = 1; // initialize to first hole
 int holes_in_round = 18;
 bool next_shot_is_tee_shot = false; // assigned value of true after a putt is made
@@ -68,12 +70,19 @@ static void show_par_for_each_hole() {
 static void add_and_show_total() { // add up strokes and putts and show them
   int total_score = 0;
   int total_putts = 0;
+  int total_GIR = 0;
+  for (int a=1; a<holes_in_round+1; a++) {
+    if (num_of_strokes[a]-num_of_putts[a] <= par_for_each_hole[a]) { // if GIR is true
+      num_of_GIR[a] = true;
+    }
+  }
   for (int a=1; a<holes_in_round+1; a++) {
     total_score+=num_of_strokes[a];
     total_putts+=num_of_putts[a];
+    total_GIR+=num_of_GIR[a];
   }
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts", total_score, total_putts);
+  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts\n%uGIR", total_score, total_putts, total_GIR);
   text_layer_set_text(text_layer, body_text);
   
   round_complete = true;
@@ -87,10 +96,17 @@ static void show_club_selection() {
 
 /////// Click event functions
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
-  round_complete = false;
-  num_of_strokes[current_hole] = 0;
-  next_shot_is_tee_shot = false;
-  show_club_selection();
+  if (round_start == true) {
+    if (num_of_strokes[current_hole] == 0) { // current hole is already 0
+      prev_hole();
+    }
+    else { // current hole still has strokes in it
+      num_of_strokes[current_hole] = 0;
+    }
+    round_complete = false;
+    next_shot_is_tee_shot = false;
+    show_club_selection();
+  }
 }
 static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
   //... called when long click is released ...
