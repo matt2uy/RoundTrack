@@ -12,6 +12,13 @@ bool round_complete = false;
 
 char clubs_selected[200];
 
+
+// pre round:
+bool round_start = false;
+bool round_type_selected = false;
+int par_for_each_hole[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int pre_round_hole_iterator = 1;
+
 /////// Stroke manipulation functions
 static void add_stroke(char shot_type) {
   if (shot_type == 'p') {
@@ -44,6 +51,20 @@ static void prev_hole() {
   }
 }
 /////// Update window
+static void show_round_type() {
+  static char body_text[50];
+  // show round type choices
+  snprintf(body_text, sizeof(body_text), "18 holes\n---------\n9 holes\n---------\n");
+  text_layer_set_text(text_layer, body_text);
+}
+
+static void show_par_for_each_hole() {
+  static char body_text[50];
+  // show round type choices
+  snprintf(body_text, sizeof(body_text), "Par 3\n---H %u----\nPar 4\n---------\nPar 5",pre_round_hole_iterator);
+  text_layer_set_text(text_layer, body_text);
+}
+
 static void add_and_show_total() { // add up strokes and putts and show them
   int total_score = 0;
   int total_putts = 0;
@@ -60,7 +81,7 @@ static void add_and_show_total() { // add up strokes and putts and show them
 
 static void show_club_selection() {
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n----------\nApproach\n----------\nPutt", current_hole, num_of_strokes[current_hole]);
+  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n---------\nApproach\n---------\nPutt", current_hole, num_of_strokes[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -77,7 +98,25 @@ static void select_long_click_release_handler(ClickRecognizerRef recognizer, voi
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (round_complete == false) {
+  if (round_start == false && round_type_selected == false) {
+    // choose 9 or 18 holes
+    holes_in_round = 18;
+    round_type_selected = true;
+    show_par_for_each_hole();
+  }
+  else if (round_start == false && round_type_selected == true) {
+    // choose each par
+    if (pre_round_hole_iterator == holes_in_round) { // done round
+      round_start = true;
+      show_club_selection();
+    }
+    else {
+      show_par_for_each_hole();
+    }
+    pre_round_hole_iterator++;
+    par_for_each_hole[pre_round_hole_iterator] = 3;
+  }
+  else if (round_complete == false) {
     if (next_shot_is_tee_shot == true) { // proceed to next hole if last stroke was a putt
       if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
         add_and_show_total();
@@ -96,7 +135,25 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   }
 }
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (round_complete == false) {
+  if (round_start == false && round_type_selected == false) {
+    // choose 9 or 18 holes
+    holes_in_round = 9;
+    round_type_selected = true;
+    show_par_for_each_hole();
+  }
+  else if (round_start == false && round_type_selected == true) {
+    // choose each par
+    if (pre_round_hole_iterator == holes_in_round) {
+      round_start = true;
+      show_club_selection();
+    }
+    else {
+      show_par_for_each_hole();
+    }
+    pre_round_hole_iterator++;
+    par_for_each_hole[pre_round_hole_iterator] = 4;
+  }
+  else if (round_complete == false) {
     if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
       if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
         add_and_show_total();
@@ -116,7 +173,23 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (round_complete == false) {
+  if (round_start == false && round_type_selected == false) {
+    // choose 9 or 18 holes
+    show_round_type();
+  }
+  else if (round_start == false && round_type_selected == true) {
+    // choose each par
+    if (pre_round_hole_iterator == holes_in_round) {
+      round_start = true;
+      show_club_selection();
+    }
+    else {
+      show_par_for_each_hole();
+    }
+    pre_round_hole_iterator++;
+    par_for_each_hole[pre_round_hole_iterator] = 5;
+  }
+  else if (round_complete == false) {
     add_stroke('p');
     show_club_selection();
     next_shot_is_tee_shot = true;
@@ -138,7 +211,8 @@ static void window_load(Window *window) {
   
   text_layer = text_layer_create(GRect(0, 0, 144, 154));  
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n----------\nApproach\n----------\nPutt", current_hole, num_of_strokes[current_hole]);
+  // show round type choices
+  snprintf(body_text, sizeof(body_text), "18 holes\n---------\n9 holes\n---------\n");
   text_layer_set_text(text_layer, body_text);
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
