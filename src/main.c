@@ -11,7 +11,28 @@ int holes_in_round = 18;
 bool next_shot_is_tee_shot = false; // assigned value of true after a putt is made
 bool round_complete = false;
 
-char clubs_selected[200];
+char clubs_selected[19][11] = {  
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'},
+                          {'-','-','-','-','-','-','-','-','-','-','-'}
+                          };
+
 
 
 // pre round:
@@ -91,8 +112,9 @@ static void add_and_show_total() { // add up strokes and putts and show them
     total_putts+=num_of_putts[a];
     total_GIR+=num_of_GIR[a];
   }
+  
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts\n%uGIR", total_score, total_putts, total_GIR);
+  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts\n%u/%uGIR", total_score, total_putts, total_GIR, holes_in_round);
   text_layer_set_text(text_layer, body_text);
   
   round_complete = true;
@@ -100,7 +122,13 @@ static void add_and_show_total() { // add up strokes and putts and show them
 
 static void show_club_selection() {
   static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n---------\nApproach\n---------\nPutt", current_hole, num_of_strokes[current_hole]);
+  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n%c%c%c%c%c%c%c%c%c%c\nApproach\n---------\nPutt", 
+          current_hole, num_of_strokes[current_hole],
+          clubs_selected[current_hole][1], clubs_selected[current_hole][2],
+          clubs_selected[current_hole][3], clubs_selected[current_hole][4],
+          clubs_selected[current_hole][5], clubs_selected[current_hole][6],
+          clubs_selected[current_hole][7], clubs_selected[current_hole][8],
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10]);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -155,11 +183,13 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
         next_shot_is_tee_shot = false;
         next_hole();
         add_stroke('d');
+        clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
         show_club_selection();
       }
     }
     else { // stay in the same hole if there are no putts yet in this hole
       add_stroke('d');
+      clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
       show_club_selection();
     }
   }
@@ -196,11 +226,13 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
         next_shot_is_tee_shot = false;
         next_hole();
         add_stroke('a');
+        clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
         show_club_selection();
       }
     }
     else { // stay in the same hole if there are no putts yet in this hole
       add_stroke('a');
+      clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
       show_club_selection();
     }
   }
@@ -209,7 +241,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_start == false && round_type_selected == false) {
     // choose 9 or 18 holes - chose a blank
-    show_par_for_each_hole();
+    show_round_type();
   }
   else if (round_start == false && round_type_selected == true) {
     // choose each par
@@ -229,6 +261,7 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   }
   else if (round_complete == false) {
     add_stroke('p');
+    clubs_selected[current_hole][num_of_strokes[current_hole]] = 'p';
     show_club_selection();
     next_shot_is_tee_shot = true;
   }
@@ -249,7 +282,6 @@ static void window_load(Window *window) {
   
   text_layer = text_layer_create(GRect(0, 0, 144, 154));  
   static char body_text[50];
-  // show round type choices
   snprintf(body_text, sizeof(body_text), "18 holes\n---------\n9 holes\n---------\n");
   text_layer_set_text(text_layer, body_text);
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
