@@ -2,8 +2,7 @@
 
 static Window *window;
 static TextLayer *text_layer;
-int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,    // there is no hole 0
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 bool num_of_GIR[] = {false,false,false,false,false,false,false,false,false,false,
                      false,false,false,false,false,false,false,false,false,false};
@@ -18,6 +17,7 @@ char clubs_selected[200];
 // pre round:
 bool round_start = false;
 bool round_type_selected = false;
+bool pre_round_summary_shown = false;
 int par_for_each_hole[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int pre_round_hole_iterator = 1;
 
@@ -64,6 +64,16 @@ static void show_par_for_each_hole() {
   static char body_text[50];
   // show round type choices
   snprintf(body_text, sizeof(body_text), "Par 3\n---H %u----\nPar 4\n---------\nPar 5",pre_round_hole_iterator);
+  text_layer_set_text(text_layer, body_text);
+}
+
+static void show_pre_round_summary() {
+  int course_par = 0;
+  for (int a=1; a < holes_in_round; a++) { //  add up course par
+    course_par+=par_for_each_hole[a];
+  }
+  static char body_text[50];
+  snprintf(body_text, sizeof(body_text), "Is this right?\n%u Holes\nPar %u\nPress any key", holes_in_round, course_par);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -122,9 +132,13 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   }
   else if (round_start == false && round_type_selected == true) {
     // choose each par
-    if (pre_round_hole_iterator == holes_in_round) { // done round
+    if (pre_round_summary_shown == true) {
       round_start = true;
       show_club_selection();
+    }
+    else if (pre_round_hole_iterator == holes_in_round) { // done round
+      show_pre_round_summary();
+      pre_round_summary_shown = true;
     }
     else {
       show_par_for_each_hole();
@@ -159,9 +173,13 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   }
   else if (round_start == false && round_type_selected == true) {
     // choose each par
-    if (pre_round_hole_iterator == holes_in_round) {
+    if (pre_round_summary_shown == true) {
       round_start = true;
       show_club_selection();
+    }
+    else if (pre_round_hole_iterator == holes_in_round) { // done round
+      show_pre_round_summary();
+      pre_round_summary_shown = true;
     }
     else {
       show_par_for_each_hole();
@@ -170,7 +188,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     par_for_each_hole[pre_round_hole_iterator] = 4;
   }
   else if (round_complete == false) {
-    if (next_shot_is_tee_shot == true) { // go to next next if last stroke was a putt
+    if (next_shot_is_tee_shot == true) { // proceed to next hole if last stroke was a putt
       if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
         add_and_show_total();
       }
@@ -181,7 +199,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
         show_club_selection();
       }
     }
-    else {  // stay in the same hole if there are no putts yet in this hole
+    else { // stay in the same hole if there are no putts yet in this hole
       add_stroke('a');
       show_club_selection();
     }
@@ -190,14 +208,18 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (round_start == false && round_type_selected == false) {
-    // choose 9 or 18 holes
-    show_round_type();
+    // choose 9 or 18 holes - chose a blank
+    show_par_for_each_hole();
   }
   else if (round_start == false && round_type_selected == true) {
     // choose each par
-    if (pre_round_hole_iterator == holes_in_round) {
+    if (pre_round_summary_shown == true) {
       round_start = true;
       show_club_selection();
+    }
+    else if (pre_round_hole_iterator == holes_in_round) { // done round
+      show_pre_round_summary();
+      pre_round_summary_shown = true;
     }
     else {
       show_par_for_each_hole();
