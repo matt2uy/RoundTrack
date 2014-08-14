@@ -139,6 +139,9 @@ static void select_long_click_handler(ClickRecognizerRef recognizer, void *conte
       prev_hole();
     }
     else { // current hole still has strokes in it
+      for (int a = 0; a<12;a++) {
+        clubs_selected[current_hole][a] = '-';
+      }
       num_of_strokes[current_hole] = 0;
     }
     round_complete = false;
