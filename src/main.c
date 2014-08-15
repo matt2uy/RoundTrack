@@ -50,6 +50,9 @@ int par_for_each_hole[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int pre_round_hole_iterator = 1;
 int holes_in_round = 18;
 
+bool first_hole_tee_shot_done = false;// messy
+
+
 ////
 
 struct golf_course {
@@ -264,15 +267,25 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
       }
       // a tee shot on a par 4-5 = 
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4 -5
-        tee_shot_result_pending = true;
-        next_shot_is_tee_shot = false;
-        next_hole();
-        add_stroke('d');
-        clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
-        show_tee_shot_result();
+        if (current_hole == 1 && first_hole_tee_shot_done == false) {
+          first_hole_tee_shot_done = true;
+          tee_shot_result_pending = true;
+          next_shot_is_tee_shot = false;
+          add_stroke('d');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
+          show_tee_shot_result();
+        }
+        else {
+          tee_shot_result_pending = true;
+          next_shot_is_tee_shot = false;
+          next_hole();
+          add_stroke('d');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
+          show_tee_shot_result();
+        }
       }
       // tee shot on par 3
-      else {
+      else if (par_for_each_hole[current_hole] == 3){
         next_shot_is_tee_shot = false;
         next_hole();
         add_stroke('d');
@@ -324,14 +337,29 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
         add_and_show_total();
       }
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4-5
-        next_shot_is_tee_shot = false;
-        next_hole();
-        add_stroke('a');
-        clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
-        show_tee_shot_result();
-        tee_shot_result_pending = true;
+        if (current_hole == 1 && first_hole_tee_shot_done == false) {
+          first_hole_tee_shot_done = true;
+          next_shot_is_tee_shot = false;
+          add_stroke('a');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
+          show_tee_shot_result();
+          tee_shot_result_pending = true;
+        }
+        else {
+          next_shot_is_tee_shot = false;
+          next_hole();
+          add_stroke('a');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
+          show_tee_shot_result();
+          tee_shot_result_pending = true;
+        }
       }
-      else { // tee shot on par 3
+
+
+
+
+
+      else if (par_for_each_hole[current_hole] == 3) { // tee shot on par 3
         next_shot_is_tee_shot = false;
         next_hole();
         add_stroke('a');
