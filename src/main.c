@@ -42,7 +42,7 @@ bool round_start = false;
 bool round_type_selected = false;
 bool pre_round_summary_shown = false;
 
-bool next_shot_is_tee_shot = false; // assigned value of true after a putt is made
+bool next_shot_is_tee_shot = true; // assigned value of true after a putt is made
 bool round_complete = false;
 bool tee_shot_result_pending = false;
 
@@ -187,6 +187,19 @@ static void show_club_selection() {
           clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
+
+static void show_club_selection_at_18th() {
+  static char body_text[50];
+  snprintf(body_text, sizeof(body_text), "H%u  Finish  S%u\n%c%c%c%c%c%c%c%c%c%c\nRound\n--Par %u--\nPutt", 
+          current_hole, num_of_strokes[current_hole],
+          clubs_selected[current_hole][1], clubs_selected[current_hole][2],
+          clubs_selected[current_hole][3], clubs_selected[current_hole][4],
+          clubs_selected[current_hole][5], clubs_selected[current_hole][6],
+          clubs_selected[current_hole][7], clubs_selected[current_hole][8],
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole]);
+  text_layer_set_text(text_layer, body_text);
+}
+
 
 /////// Click event functions
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
@@ -361,6 +374,12 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
       num_of_FIR[current_hole] = 'r';     
       show_club_selection();
       tee_shot_result_pending = false;
+    }
+    else if (current_hole == holes_in_round) {
+      add_stroke('p');
+      clubs_selected[current_hole][num_of_strokes[current_hole]] = 'p';
+      show_club_selection_at_18th();
+      next_shot_is_tee_shot = true;
     }
     else {
       add_stroke('p');
