@@ -4,6 +4,7 @@ static Window *window;
 static TextLayer *text_layer;
 int num_of_strokes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int num_of_putts[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int num_of_penalties[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 bool num_of_GIR[] = {false,false,false,false,false,false,false,false,false,false,
                      false,false,false,false,false,false,false,false,false,false};
 char num_of_FIR[] = {'-', '-', '-', '-', '-', '-', 
@@ -136,6 +137,7 @@ static void add_and_show_total() { // add up strokes and putts and show them
   int total_FIR = 0;
   int total_tee_left = 0;
   int total_tee_right = 0;
+  int total_penalties = 0;
   // Fairway in regulation
   for (int a=1; a<holes_in_round+1; a++) {
     if (num_of_FIR[a] == 'f') { // if FIR is true
@@ -158,10 +160,11 @@ static void add_and_show_total() { // add up strokes and putts and show them
     total_score+=num_of_strokes[a];
     total_putts+=num_of_putts[a];
     total_GIR+=num_of_GIR[a];
+    total_penalties+=num_of_penalties[a];
   }
   
-  static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "You shot: %u\n%u Putts\n%u/%u GIR\n%u < %u/%u FIR > %u", total_score, total_putts, total_GIR, holes_in_round, total_tee_left, total_FIR, num_of_possible_FIR, total_tee_right);
+  static char body_text[100];
+  snprintf(body_text, sizeof(body_text), "%u Strokes\n%u Putts\n%u/%u GIR\n%u < %u/%u FIR > %u\n %u Penalties", total_score, total_putts, total_GIR, holes_in_round, total_tee_left, total_FIR, num_of_possible_FIR, total_tee_right, total_penalties);
   text_layer_set_text(text_layer, body_text);
   
   round_complete = true;
@@ -205,6 +208,21 @@ static void show_club_selection_at_18th() {
 
 
 /////// Click event functions
+// hold up click = 1 stroke penalty
+static void up_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
+  if (round_start == true) {
+    num_of_penalties[current_hole]++;      
+    add_stroke('x');
+    clubs_selected[current_hole][num_of_strokes[current_hole]] = 'x';
+    show_club_selection();
+    next_shot_is_tee_shot = false;
+  }
+}
+static void up_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
+  //... called when long click is released ...
+  // do nothing
+}
+
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
   if (round_start == true) {
     if (num_of_strokes[current_hole] == 0) { // current hole is already 0
@@ -425,6 +443,7 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
   window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
+  window_long_click_subscribe(BUTTON_ID_UP, 700, up_long_click_handler, up_long_click_release_handler);
 }
 
 static void window_load(Window *window) {
