@@ -130,7 +130,7 @@ static void show_pre_round_summary() {
   text_layer_set_text(text_layer, body_text);
 }
 
-static void add_and_show_total() { // add up strokes and putts and show them
+static void show_post_round_summary() { // add up strokes and putts and show them
   int total_score = 0;
   int total_putts = 0;
   int total_GIR = 0;
@@ -281,7 +281,7 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
     else if (next_shot_is_tee_shot == true) { 
       // select is pressed after putting out the final hole =
       if (current_hole == holes_in_round) {
-        add_and_show_total();
+        show_post_round_summary();
       }
       // a tee shot on a par 4-5 = 
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4 -5
@@ -352,7 +352,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     }
     else if (next_shot_is_tee_shot == true) { // proceed to next hole if last stroke was a putt
       if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
-        add_and_show_total();
+        show_post_round_summary();
       }
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4-5
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
