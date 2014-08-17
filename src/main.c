@@ -285,6 +285,7 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
       }
       // a tee shot on a par 4-5 = 
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4 -5
+        // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           first_hole_tee_shot_done = true;
           tee_shot_result_pending = true;
@@ -304,11 +305,20 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
       }
       // tee shot on par 3
       else if (par_for_each_hole[current_hole] == 3){
-        next_shot_is_tee_shot = false;
-        next_hole();
-        add_stroke('d');
-        clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
-        show_club_selection();
+        // temporary special case for hole 1
+        if (current_hole == 1 && first_hole_tee_shot_done == false) {
+          next_shot_is_tee_shot = false;
+          add_stroke('d');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
+          show_club_selection();
+        }
+        else {
+          next_shot_is_tee_shot = false;
+          next_hole();
+          add_stroke('d');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'd';
+          show_club_selection();
+        }
       }
     }
     // not a tee shot = stay in the same hole if there are no putts yet in this hole
@@ -355,6 +365,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
         show_post_round_summary();
       }
       else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4-5
+        // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           first_hole_tee_shot_done = true;
           next_shot_is_tee_shot = false;
@@ -372,17 +383,21 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
           tee_shot_result_pending = true;
         }
       }
-
-
-
-
-
       else if (par_for_each_hole[current_hole] == 3) { // tee shot on par 3
+        // temporary special case for hole 1
+        if (current_hole == 1 && first_hole_tee_shot_done == false) {
+          next_shot_is_tee_shot = false;
+          add_stroke('a');
+          clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
+          show_club_selection();
+        }
+        else {
         next_shot_is_tee_shot = false;
         next_hole();
         add_stroke('a');
         clubs_selected[current_hole][num_of_strokes[current_hole]] = 'a';
         show_club_selection();
+        }
       }
     }
     else { // stay in the same hole if there are no putts yet in this hole
