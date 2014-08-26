@@ -45,23 +45,21 @@ bool round_complete = false;
 bool tee_shot_result_pending = false;
 bool first_hole_tee_shot_done = false;// messy
 
+////
 // duntroon
 char name[25] = "Duntroon";
 int hole_yardage[30] = {0, 490, 330, 102, 319, 320, 346, 317, 156, 415,   // there is no hole 0
                       452, 311, 288, 158, 207, 502, 335, 406, 442};
+int holes_in_round = 18;
 int par_for_each_hole[30] = {0, 5, 4, 3, 4, 4, 4, 4, 3, 4,   // there is no hole 0
                       5, 4, 4, 3, 3, 5, 4, 4, 4};
-int holes_in_round = 18;
 int total_par = 71;
 int num_of_possible_FIR = 14;
 
 ///////
 
-
-////
-
 struct golf_course {
-  char name[25];
+  char name[100];
   int hole_yardage[20];
   int holes_in_round;
   int par_for_each_hole[20];
@@ -80,10 +78,34 @@ struct golf_course bantys_roost = {"Banty's Roost", // name
     {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
     18, // num of holes
     {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
-    71, // total par
+    72, // total par
     14// num of possible FIR
     };
-struct golf_course glen_eagle = {"Glen Eagle", // name
+
+struct golf_course glen_eagle_b_to_y = {"Glen Eagle:\nBlue to Yellow", // name
+    {0, 385, 504, 169, 356, 470, 151, 490, 196, 324, 509, 159, 314, 512, 287, 154, 350, 382, 336}, // hole yardages
+    18, // num of holes
+    {0, 4, 5, 3, 4, 5, 3, 5, 3, 4, 5, 3, 4, 5, 4, 3, 4, 4, 4}, // hole pars
+    72, // total par
+    14// num of possible FIR
+    };
+struct golf_course glen_eagle_y_to_r = {"Glen Eagle:\nYellow to Red", // name
+    {0, 509, 159, 314, 512, 287, 154, 350, 382, 336, 330, 355, 420, 492, 160, 301, 403, 137, 537}, // hole yardages
+    18, // num of holes
+    {0, 5, 3, 4, 5, 4, 3, 4, 4, 4, 4, 4, 4, 5, 3, 4, 4, 3, 5}, // hole pars
+    72, // total par
+    14// num of possible FIR
+    };
+struct golf_course glen_eagle_r_to_b = {"Glen Eagle:\nRed to Blue", // name
+    {0, 330, 355, 420, 492, 160, 301, 403, 137, 537, 385, 504, 169, 356, 470, 151, 490, 196, 324}, // hole yardages
+    18, // num of holes
+    {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
+    72, // total par
+    14// num of possible FIR
+    };
+
+
+struct golf_course current_course = {"placeholder", // name
     {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
     18, // num of holes
     {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
@@ -123,19 +145,10 @@ static void prev_hole() {
   }
 }
 /////// Update window
-static void show_round_type() {
-  static char body_text[50];
-  // show round type choices
-  snprintf(body_text, sizeof(body_text), "18 holes\n---------\n9 holes\n---------\n");
-  text_layer_set_text(text_layer, body_text);
-}
 
 static void set_up_course() {
-  holes_in_round = duntroon_highlands.holes_in_round;
-  total_par = duntroon_highlands.total_par;
-  //name = bantys_roost.name;
-  static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "%s\n%u Holes\nPar %u\nPress any key", name, holes_in_round, total_par);
+  static char body_text[100];
+  snprintf(body_text, sizeof(body_text), "%s\n%u Holes\nPar %u\nPress any key", current_course.name, current_course.holes_in_round, current_course.total_par);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -180,7 +193,7 @@ static void show_post_round_summary() { // add up strokes and putts and show the
 }
 
 static void show_tee_shot_result() {
-  static char body_text[50];
+  static char body_text[100];
   snprintf(body_text, sizeof(body_text), "H%u  <--  S%u\n%c%c%c%c%c%c%c%c%c%c\nFIR\n ---------  \n  -->  ", 
           current_hole, num_of_strokes[current_hole],
           clubs_selected[current_hole][1], clubs_selected[current_hole][2],
@@ -192,7 +205,7 @@ static void show_tee_shot_result() {
 }
 
 static void show_club_selection() {
-  static char body_text[50];
+  static char body_text[100];
   snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n%c%c%c%c%c%c%c%c%c%c\nApproach\n--Par %u--\nPutt", 
           current_hole, num_of_strokes[current_hole],
           clubs_selected[current_hole][1], clubs_selected[current_hole][2],
@@ -204,7 +217,7 @@ static void show_club_selection() {
 }
 
 static void show_club_selection_at_18th() {
-  static char body_text[50];
+  static char body_text[100];
   snprintf(body_text, sizeof(body_text), "H%u  Finish  S%u\n%c%c%c%c%c%c%c%c%c%c\nRound\n--Par %u--\nPutt", 
           current_hole, num_of_strokes[current_hole],
           clubs_selected[current_hole][1], clubs_selected[current_hole][2],
@@ -229,7 +242,7 @@ static void up_long_click_handler(ClickRecognizerRef recognizer, void *context) 
 }
 static void up_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {}
 
-static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
+static void down_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
   if (round_start == true) {
     if (num_of_strokes[current_hole] == 0) { // current hole is already 0
       prev_hole();
@@ -245,13 +258,23 @@ static void select_long_click_handler(ClickRecognizerRef recognizer, void *conte
     show_club_selection();
   }
 }
+static void down_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {}
+
+static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
+  if (round_start == true) {
+    prev_hole();
+    round_complete = false;
+    next_shot_is_tee_shot = false;
+    show_club_selection();
+  }
+}
 static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {}
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   /////// choose round length
   if (round_start == false && course_selected == false) {
     // choose 9 or 18 holes
-    holes_in_round = 18;
+    current_course = glen_eagle_b_to_y;
     set_up_course();
     course_selected = true;
   }
@@ -323,8 +346,7 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   /////// choose round length
   if (round_start == false && course_selected == false) {
-    // choose 9 or 18 holes
-    holes_in_round = 9;
+    current_course = glen_eagle_y_to_r;
     course_selected = true;
     set_up_course();
   }
@@ -389,8 +411,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   /////// choose round length
   if (round_start == false && course_selected == false) {
-    // choose 9 or 18 holes
-    holes_in_round = 18;
+    current_course = glen_eagle_r_to_b;
     course_selected = true;
     set_up_course();
   }
@@ -427,6 +448,7 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
   window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
   window_long_click_subscribe(BUTTON_ID_UP, 700, up_long_click_handler, up_long_click_release_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 700, down_long_click_handler, down_long_click_release_handler);
 }
 
 static void window_load(Window *window) {
@@ -434,8 +456,8 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   
   text_layer = text_layer_create(GRect(0, 0, 144, 154));  
-  static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "18 holes\n---------\n9 holes\n---------\n");
+  static char body_text[100];
+  snprintf(body_text, sizeof(body_text), "Blue to Yellow\n---------\nYellow to Red\n---------\nRed to Blue");
   text_layer_set_text(text_layer, body_text);
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
