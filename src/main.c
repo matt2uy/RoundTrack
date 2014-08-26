@@ -45,17 +45,6 @@ bool round_complete = false;
 bool tee_shot_result_pending = false;
 bool first_hole_tee_shot_done = false;// messy
 
-////
-// duntroon
-char name[25] = "Duntroon";
-int hole_yardage[30] = {0, 490, 330, 102, 319, 320, 346, 317, 156, 415,   // there is no hole 0
-                      452, 311, 288, 158, 207, 502, 335, 406, 442};
-int holes_in_round = 18;
-int par_for_each_hole[30] = {0, 5, 4, 3, 4, 4, 4, 4, 3, 4,   // there is no hole 0
-                      5, 4, 4, 3, 3, 5, 4, 4, 4};
-int total_par = 71;
-int num_of_possible_FIR = 14;
-
 ///////
 
 struct golf_course {
@@ -129,7 +118,7 @@ static void subtract_stroke() {
 }
 
 static void next_hole() {
-  if (current_hole == holes_in_round) {
+  if (current_hole == current_course.holes_in_round) {
     current_hole = 1;
   }
   else {
@@ -138,7 +127,7 @@ static void next_hole() {
 }
 static void prev_hole() {
   if (current_hole == 1) {
-    current_hole = holes_in_round;
+    current_hole = current_course.holes_in_round;
   }
   else {
     current_hole--;
@@ -161,7 +150,7 @@ static void show_post_round_summary() { // add up strokes and putts and show the
   int total_tee_right = 0;
   int total_penalties = 0;
   // Fairway in regulation
-  for (int a=1; a<holes_in_round+1; a++) {
+  for (int a=1; a<current_course.holes_in_round+1; a++) {
     if (num_of_FIR[a] == 'f') { // if FIR is true
       total_FIR++;
     }
@@ -173,12 +162,12 @@ static void show_post_round_summary() { // add up strokes and putts and show the
     }
   }
   // Green in regulation
-  for (int a=1; a<holes_in_round+1; a++) {
-    if (num_of_strokes[a]-num_of_putts[a] <= par_for_each_hole[a]) { // if GIR is true
+  for (int a=1; a<current_course.holes_in_round+1; a++) {
+    if (num_of_strokes[a]-num_of_putts[a] <= current_course.par_for_each_hole[a]) { // if GIR is true
       num_of_GIR[a] = true;
     }
   }
-  for (int a=1; a<holes_in_round+1; a++) {
+  for (int a=1; a<current_course.holes_in_round+1; a++) {
     total_score+=num_of_strokes[a];
     total_putts+=num_of_putts[a];
     total_GIR+=num_of_GIR[a];
@@ -186,7 +175,7 @@ static void show_post_round_summary() { // add up strokes and putts and show the
   }
   
   static char body_text[100];
-  snprintf(body_text, sizeof(body_text), "%u Strokes\n%u Putts\n%u/%u GIR\n%u < %u/%u FIR > %u\n %u Penalties", total_score, total_putts, total_GIR, holes_in_round, total_tee_left, total_FIR, num_of_possible_FIR, total_tee_right, total_penalties);
+  snprintf(body_text, sizeof(body_text), "%u Strokes\n%u Putts\n%u/%u GIR\n%u < %u/%u FIR > %u\n %u Penalties", total_score, total_putts, total_GIR, current_course.holes_in_round, total_tee_left, total_FIR, current_course.num_of_possible_FIR, total_tee_right, total_penalties);
   text_layer_set_text(text_layer, body_text);
   
   round_complete = true;
@@ -212,7 +201,7 @@ static void show_club_selection() {
           clubs_selected[current_hole][3], clubs_selected[current_hole][4],
           clubs_selected[current_hole][5], clubs_selected[current_hole][6],
           clubs_selected[current_hole][7], clubs_selected[current_hole][8],
-          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10], current_course.par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -224,7 +213,7 @@ static void show_club_selection_at_18th() {
           clubs_selected[current_hole][3], clubs_selected[current_hole][4],
           clubs_selected[current_hole][5], clubs_selected[current_hole][6],
           clubs_selected[current_hole][7], clubs_selected[current_hole][8],
-          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10], current_course.par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -293,11 +282,11 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
     // if select is pressed after putting out the hole -> tee shot
     else if (next_shot_is_tee_shot == true) { 
       // select is pressed after putting out the final hole =
-      if (current_hole == holes_in_round) {
+      if (current_hole == current_course.holes_in_round) {
         show_post_round_summary();
       }
       // a tee shot on a par 4-5 = 
-      else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4 -5
+      else if (current_course.par_for_each_hole[current_hole] > 3) { // tee shot on par 4 -5
         // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           first_hole_tee_shot_done = true;
@@ -317,7 +306,7 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
         }
       }
       // tee shot on par 3
-      else if (par_for_each_hole[current_hole] == 3){
+      else if (current_course.par_for_each_hole[current_hole] == 3){
         // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           next_shot_is_tee_shot = false;
@@ -361,10 +350,10 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
       tee_shot_result_pending = false;
     }
     else if (next_shot_is_tee_shot == true) { // proceed to next hole if last stroke was a putt
-      if (current_hole == holes_in_round) { // if select is pressed after putting out the final hole
+      if (current_hole == current_course.holes_in_round) { // if select is pressed after putting out the final hole
         show_post_round_summary();
       }
-      else if (par_for_each_hole[current_hole] > 3) { // tee shot on par 4-5
+      else if (current_course.par_for_each_hole[current_hole] > 3) { // tee shot on par 4-5
         // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           first_hole_tee_shot_done = true;
@@ -383,7 +372,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
           tee_shot_result_pending = true;
         }
       }
-      else if (par_for_each_hole[current_hole] == 3) { // tee shot on par 3
+      else if (current_course.par_for_each_hole[current_hole] == 3) { // tee shot on par 3
         // temporary special case for hole 1
         if (current_hole == 1 && first_hole_tee_shot_done == false) {
           next_shot_is_tee_shot = false;
@@ -425,7 +414,7 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
       show_club_selection();
       tee_shot_result_pending = false;
     }
-    else if (current_hole == holes_in_round) {
+    else if (current_hole == current_course.holes_in_round) {
       add_stroke('p');
       clubs_selected[current_hole][num_of_strokes[current_hole]] = 'p';
       show_club_selection_at_18th();
