@@ -63,6 +63,7 @@ struct golf_course duntroon_highlands = {"Duntroon Highlands", // name
     71, // total par
     14// num of possible FIR
     };
+/* incomplete:
 struct golf_course bantys_roost = {"Banty's Roost", // name
     {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
     18, // num of holes
@@ -70,13 +71,13 @@ struct golf_course bantys_roost = {"Banty's Roost", // name
     72, // total par
     14// num of possible FIR
     };
-
+*/
 struct golf_course glen_eagle_b_to_y = {"Glen Eagle:\nBlue to Yellow", // name
     {0, 385, 504, 169, 356, 470, 151, 490, 196, 324, 509, 159, 314, 512, 287, 154, 350, 382, 336}, // hole yardages
     18, // num of holes
     {0, 4, 5, 3, 4, 5, 3, 5, 3, 4, 5, 3, 4, 5, 4, 3, 4, 4, 4}, // hole pars
     72, // total par
-    14// num of possible FIR
+    13// num of possible FIR
     };
 struct golf_course glen_eagle_y_to_r = {"Glen Eagle:\nYellow to Red", // name
     {0, 509, 159, 314, 512, 287, 154, 350, 382, 336, 330, 355, 420, 492, 160, 301, 403, 137, 537}, // hole yardages
@@ -95,11 +96,11 @@ struct golf_course glen_eagle_r_to_b = {"Glen Eagle:\nRed to Blue", // name
 
 
 struct golf_course current_course = {"placeholder", // name
-    {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // hole yardages
     18, // num of holes
-    {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
-    71, // total par
-    14// num of possible FIR
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // hole pars
+    0, // total par
+    0// num of possible FIR
     };
 
 /////// Stroke manipulation functions
