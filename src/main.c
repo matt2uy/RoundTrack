@@ -206,25 +206,25 @@ static void show_tee_shot_result() {
 
 static void show_club_selection() {
   static char body_text[100];
-  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n%c%c%c%c%c%c%c%c%c%c\nApproach\n--Par %u--\nPutt", 
+  snprintf(body_text, sizeof(body_text), "H%u  Drive  S%u\n%c%c%c%c%c%c%c%c%c%c\nApproach\n--Par %u | %u--\nPutt", 
           current_hole, num_of_strokes[current_hole],
           clubs_selected[current_hole][1], clubs_selected[current_hole][2],
           clubs_selected[current_hole][3], clubs_selected[current_hole][4],
           clubs_selected[current_hole][5], clubs_selected[current_hole][6],
           clubs_selected[current_hole][7], clubs_selected[current_hole][8],
-          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole]);
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
 static void show_club_selection_at_18th() {
   static char body_text[100];
-  snprintf(body_text, sizeof(body_text), "H%u  Finish  S%u\n%c%c%c%c%c%c%c%c%c%c\nRound\n--Par %u--\nPutt", 
+  snprintf(body_text, sizeof(body_text), "H%u  Finish  S%u\n%c%c%c%c%c%c%c%c%c%c\nRound\n--Par %u | %u--\nPutt", 
           current_hole, num_of_strokes[current_hole],
           clubs_selected[current_hole][1], clubs_selected[current_hole][2],
           clubs_selected[current_hole][3], clubs_selected[current_hole][4],
           clubs_selected[current_hole][5], clubs_selected[current_hole][6],
           clubs_selected[current_hole][7], clubs_selected[current_hole][8],
-          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole]);
+          clubs_selected[current_hole][9], clubs_selected[current_hole][10], par_for_each_hole[current_hole], current_course.hole_yardage[current_hole]);
   text_layer_set_text(text_layer, body_text);
 }
 
