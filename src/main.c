@@ -10,7 +10,6 @@ bool num_of_GIR[] = {false,false,false,false,false,false,false,false,false,false
 char num_of_FIR[] = {'-', '-', '-', '-', '-', '-', 
                      '-', '-', '-', '-', '-', '-', 
                      '-', '-', '-', '-', '-', '-'};
-int num_of_possible_FIR = 0;
 
 int current_hole = 1; // initialize to first hole
 
@@ -38,36 +37,59 @@ char clubs_selected[19][11] = {
 
 
 
-// pre round:
+// program sequence
+bool course_selected = false;
 bool round_start = false;
-bool round_type_selected = false;
-bool pre_round_summary_shown = false;
-
 bool next_shot_is_tee_shot = true; // assigned value of true after a putt is made
 bool round_complete = false;
 bool tee_shot_result_pending = false;
-
-int par_for_each_hole[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-int pre_round_hole_iterator = 1;
-int holes_in_round = 18;
-
 bool first_hole_tee_shot_done = false;// messy
+
+// duntroon
+char name[25] = "Duntroon";
+int hole_yardage[30] = {0, 490, 330, 102, 319, 320, 346, 317, 156, 415,   // there is no hole 0
+                      452, 311, 288, 158, 207, 502, 335, 406, 442};
+int par_for_each_hole[30] = {0, 5, 4, 3, 4, 4, 4, 4, 3, 4,   // there is no hole 0
+                      5, 4, 4, 3, 3, 5, 4, 4, 4};
+int holes_in_round = 18;
+int total_par = 71;
+int num_of_possible_FIR = 14;
+
+///////
 
 
 ////
 
 struct golf_course {
-  int par_for_each_hole[20];
-  int holes_in_round;
   char name[25];
+  int hole_yardage[20];
+  int holes_in_round;
+  int par_for_each_hole[20];
+  int total_par;
+  int num_of_possible_FIR;
 };
 
-struct golf_course bantys_roost = {{3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5}, 18, "Banty's Roost"};
-
-// course selection
-/*static void select_golf_course() {
-  par_for_each_hole
-}*/
+struct golf_course duntroon_highlands = {"Duntroon Highlands", // name
+    {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
+    18, // num of holes
+    {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
+    71, // total par
+    14// num of possible FIR
+    };
+struct golf_course bantys_roost = {"Banty's Roost", // name
+    {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
+    18, // num of holes
+    {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
+    71, // total par
+    14// num of possible FIR
+    };
+struct golf_course glen_eagle = {"Glen Eagle", // name
+    {0, 490, 330, 102, 319, 320, 346, 317, 156, 415, 452, 311, 288, 158, 207, 502, 335, 406, 442}, // hole yardages
+    18, // num of holes
+    {0, 5, 4, 3, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 3, 5, 4, 4, 4}, // hole pars
+    71, // total par
+    14// num of possible FIR
+    };
 
 /////// Stroke manipulation functions
 static void add_stroke(char shot_type) {
@@ -108,25 +130,12 @@ static void show_round_type() {
   text_layer_set_text(text_layer, body_text);
 }
 
-static void show_par_for_each_hole() {
+static void set_up_course() {
+  holes_in_round = duntroon_highlands.holes_in_round;
+  total_par = duntroon_highlands.total_par;
+  //name = bantys_roost.name;
   static char body_text[50];
-  // show round type choices
-  snprintf(body_text, sizeof(body_text), "Par 3\n---H %u----\nPar 4\n---------\nPar 5",pre_round_hole_iterator);
-  text_layer_set_text(text_layer, body_text);
-}
-
-static void show_pre_round_summary() {
-  int course_par = 0;
-  for (int a=1; a < holes_in_round+1; a++) { //  add up course par
-    // get number of FIR's possible
-    if (par_for_each_hole[a] > 3) { // par 4's and 5's
-      num_of_possible_FIR++;
-    }
-    
-    course_par+=par_for_each_hole[a];
-  }
-  static char body_text[50];
-  snprintf(body_text, sizeof(body_text), "Is this right?\n%u Holes\nPar %u\nPress any key", holes_in_round, course_par);
+  snprintf(body_text, sizeof(body_text), "%s\n%u Holes\nPar %u\nPress any key", name, holes_in_round, total_par);
   text_layer_set_text(text_layer, body_text);
 }
 
@@ -218,10 +227,7 @@ static void up_long_click_handler(ClickRecognizerRef recognizer, void *context) 
     next_shot_is_tee_shot = false;
   }
 }
-static void up_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called when long click is released ...
-  // do nothing
-}
+static void up_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {}
 
 static void select_long_click_handler(ClickRecognizerRef recognizer, void *context) { // undo last hole
   if (round_start == true) {
@@ -239,35 +245,19 @@ static void select_long_click_handler(ClickRecognizerRef recognizer, void *conte
     show_club_selection();
   }
 }
-static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called when long click is released ...
-  // do nothing
-}
+static void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {}
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   /////// choose round length
-  if (round_start == false && round_type_selected == false) {
+  if (round_start == false && course_selected == false) {
     // choose 9 or 18 holes
     holes_in_round = 18;
-    round_type_selected = true;
-    show_par_for_each_hole();
+    set_up_course();
+    course_selected = true;
   }
-  ////// choose par for each hole
-  else if (round_start == false && round_type_selected == true) {
-    if (pre_round_summary_shown == true) {
-      round_start = true;
-      show_club_selection();
-    }
-    else if (pre_round_hole_iterator == holes_in_round) {
-      par_for_each_hole[pre_round_hole_iterator] = 3;
-      show_pre_round_summary();
-      pre_round_summary_shown = true;
-    }
-    else {
-      show_par_for_each_hole();
-    }
-    par_for_each_hole[pre_round_hole_iterator] = 3;
-    pre_round_hole_iterator++;
+  else if (round_start == false && course_selected == true) {
+    show_club_selection();
+    round_start = true;
   }
   ////// enter each shot
   else if (round_start == true && round_complete == false) {
@@ -331,28 +321,16 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (round_start == false && round_type_selected == false) {
+  /////// choose round length
+  if (round_start == false && course_selected == false) {
     // choose 9 or 18 holes
     holes_in_round = 9;
-    round_type_selected = true;
-    show_par_for_each_hole();
+    course_selected = true;
+    set_up_course();
   }
-  else if (round_start == false && round_type_selected == true) {
-    // choose each par
-    if (pre_round_summary_shown == true) {
-      round_start = true;
-      show_club_selection();
-    }
-    else if (pre_round_hole_iterator == holes_in_round) { // done round
-      par_for_each_hole[pre_round_hole_iterator] = 4;
-      show_pre_round_summary();
-      pre_round_summary_shown = true;
-    }
-    else {
-      show_par_for_each_hole();
-    }
-    par_for_each_hole[pre_round_hole_iterator] = 4;
-    pre_round_hole_iterator++;
+  else if (round_start == false && course_selected == true) {
+    show_club_selection();
+    round_start = true;
   }
   else if (round_start == true && round_complete == false) {
     if (tee_shot_result_pending == true) {
@@ -409,26 +387,16 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (round_start == false && round_type_selected == false) {
-    // choose 9 or 18 holes - chose a blank
-    show_round_type();
+  /////// choose round length
+  if (round_start == false && course_selected == false) {
+    // choose 9 or 18 holes
+    holes_in_round = 18;
+    course_selected = true;
+    set_up_course();
   }
-  else if (round_start == false && round_type_selected == true) {
-    // choose each par
-    if (pre_round_summary_shown == true) {
-      round_start = true;
-      show_club_selection();
-    }
-    else if (pre_round_hole_iterator == holes_in_round) { // done round
-      par_for_each_hole[pre_round_hole_iterator] = 5;
-      show_pre_round_summary();
-      pre_round_summary_shown = true;
-    }
-    else {
-      show_par_for_each_hole();
-    }
-    par_for_each_hole[pre_round_hole_iterator] = 5;
-    pre_round_hole_iterator++;
+  else if (round_start == false && course_selected == true) {
+    show_club_selection();
+    round_start = true;
   }
   else if (round_complete == false) {
     if (tee_shot_result_pending == true) { 
